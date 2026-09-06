@@ -38,6 +38,8 @@
     box-shadow: 0 4px 28px rgba(0, 0, 0, 0.5);
     touch-action: pan-y;
     user-select: none;
+    opacity: 0;
+    transition: opacity 0.28s ease;
   }
   .nav-btn {
     position: absolute;
@@ -130,9 +132,21 @@
     let currentPage = 1;
     let rendering = false;
 
+    let firstRender = true;
+
+    function wait(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
     async function renderPage(num) {
       if (rendering) return;
       rendering = true;
+
+      // fade out before swapping content (skip on very first page load)
+      if (!firstRender) {
+        canvas.style.opacity = 0;
+        await wait(220);
+      }
 
       const page = await pdfDoc.getPage(num);
       const availW = stage.clientWidth - 32;
@@ -148,6 +162,13 @@
 
       currentPage = num;
       updateUI();
+
+      // fade in
+      requestAnimationFrame(() => {
+        canvas.style.opacity = 1;
+      });
+
+      firstRender = false;
       rendering = false;
     }
 
